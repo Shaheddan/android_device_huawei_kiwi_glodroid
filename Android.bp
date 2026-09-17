@@ -1,0 +1,245 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// kiwi route A (fingerprint): the 19.1 TrustZone stack, declared as prebuilt
+// modules rather than PRODUCT_COPY_FILES.
+//
+// WHY: the build refuses ELF files in PRODUCT_COPY_FILES ("found ELF prebuilt
+// in PRODUCT_COPY_FILES, use cc_prebuilt_binary / cc_prebuilt_library_shared
+// instead"). Declaring them here also lets Soong record each blob's real
+// dependencies, so a missing library fails the build instead of the phone.
+//
+// check_elf_files is off for every blob: they were built against Huawei's own
+// liblog and against each other, so Soong cannot resolve their symbols the way
+// it does for source-built code. libshim_kiwi_fp supplies the Huawei-only
+// liblog symbols; libstdc++ below is bionic's own, which five of these blobs
+// still list and which device.mk now installs (see libshim_kiwi_fp.c).
+//
+// Every shared_libs list below is the blob's real NEEDED set, read with
+// readelf. Soong turns each into an install dependency, so a name that does
+// not exist fails the build instead of the phone at boot -- which is how the
+// missing libstdc++.so was found the hard way.
+//
+// All of these are 64-bit only, and soc_specific so they install under /vendor.
+
+// ---------------------------------------------------------------- daemons
+
+cc_prebuilt_binary {
+    name: "qseecomd",
+    // Loads the five listener libraries below and registers them with
+    // TrustZone. Runs as root: it opens /dev/mmcblk0rpmb.
+    srcs: ["proprietary/vendor/bin/qseecomd"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libQSEEComAPI",
+        "libdrmfs",
+        "libc++",
+        "libcutils",
+        "libdl",
+        "liblog",
+        "libutils",
+    ],
+}
+
+cc_prebuilt_binary {
+    name: "teecd",
+    // The GlobalPlatform relay: libteec.so sends it commands over
+    // #tc_ns_socket, and it makes the QSEECom calls. Statically linked, so it
+    // declares no shared_libs.
+    srcs: ["proprietary/vendor/bin/teecd"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+}
+
+// -------------------------------------------------------------- libraries
+
+cc_prebuilt_library_shared {
+    name: "libQSEEComAPI",
+    // The only thing that talks to /dev/qseecom and /dev/ion.
+    srcs: ["proprietary/vendor/lib64/libQSEEComAPI.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libcutils",
+        "libstdc++",
+        "libutils",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "libteec",
+    // TEEC_* entry points; talks only to teecd over a socket.
+    srcs: ["proprietary/vendor/lib64/libteec.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libc++",
+        "libcutils",
+        "libdl",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "lib_fpc_tac_shared",
+    // FPC's fingerprint TZ client: sends its commands through libteec, and
+    // reads the sensor vendor from /sys/devices/platform/fingerprint.
+    srcs: ["proprietary/vendor/lib64/lib_fpc_tac_shared.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libQSEEComAPI",
+        "libteec",
+        "libc++",
+        "libcutils",
+        "libdl",
+    ],
+}
+
+// qseecomd's listener libraries: 0xa + 0x7000 file system, 0x2000 RPMB,
+// 0x3000 SSD, 0xb time. All five must load or qseecomd's main() returns -1.
+cc_prebuilt_library_shared {
+    name: "libdrmfs",
+    srcs: ["proprietary/vendor/lib64/libdrmfs.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libQSEEComAPI",
+        "libcutils",
+        "libdiag",
+        "liblog",
+        "libstdc++",
+        "libutils",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "librpmb",
+    // Needs the downstream MMC_IOC_RPMB_CMD: kiwi_rpmb_compat_patch.py.
+    srcs: ["proprietary/vendor/lib64/librpmb.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libQSEEComAPI",
+        "liblog",
+        "libstdc++",
+        "libutils",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "libssd",
+    srcs: ["proprietary/vendor/lib64/libssd.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libQSEEComAPI",
+        "libcutils",
+        "libdiag",
+        "liblog",
+        "libstdc++",
+        "libutils",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "libdrmtime",
+    srcs: ["proprietary/vendor/lib64/libdrmtime.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libQSEEComAPI",
+        "libcutils",
+        "libdiag",
+        "liblog",
+        "libstdc++",
+        "libtime_genoff",
+        "libutils",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "libtime_genoff",
+    // Qualcomm's time-offset library; libdrmtime links it, and without it the
+    // time listener cannot load.
+    srcs: ["proprietary/vendor/lib64/libtime_genoff.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libc++",
+        "libcutils",
+        "libdl",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "libdiag",
+    // Qualcomm's diag library; libdrmfs links it.
+    srcs: ["proprietary/vendor/lib64/libdiag.so"],
+    soc_specific: true,
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libc++",
+        "libcutils",
+        "libdl",
+    ],
+}
+
+// ------------------------------------------------------------- HAL modules
+
+cc_prebuilt_library_shared {
+    name: "fingerprint.msm8916",
+    // The FPC HAL. libshim_kiwi_fp provides __android_janklog_print and
+    // __android_logPower_print, which exist only in Huawei's liblog.
+    srcs: ["proprietary/vendor/lib64/hw/fingerprint.msm8916.so"],
+    soc_specific: true,
+    relative_install_path: "hw",
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "lib_fpc_tac_shared",
+        "libshim_kiwi_fp",
+        "libc++",
+        "libcutils",
+        "libdl",
+    ],
+}
+
+cc_prebuilt_library_shared {
+    name: "gatekeeper.msm8916",
+    // Runs inside the keymaster TZ app; dlopens libQSEEComAPI.so by name.
+    srcs: ["proprietary/vendor/lib64/hw/gatekeeper.msm8916.so"],
+    soc_specific: true,
+    relative_install_path: "hw",
+    compile_multilib: "64",
+    check_elf_files: false,
+    strip: { none: true },
+    shared_libs: [
+        "libc++",
+        "libcutils",
+        "libdl",
+        "liblog",
+    ],
+}

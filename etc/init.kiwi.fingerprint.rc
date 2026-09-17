@@ -1,0 +1,65 @@
+# kiwi route A (fingerprint): the userspace side of the 19.1 TrustZone stack.
+#
+# WHY each piece, with what it was measured against:
+#
+#  /firmware symlink
+#      qseecomd, teecd and libQSEEComAPI all have "/firmware/image" compiled in
+#      (seen in their strings). GloDroid mounts the modem partition that holds
+#      the TZ app images at /vendor/odm/modem, and /firmware does not exist.
+#      It cannot be created by init at all: / is mounted read-only, so the
+#      symlink is built into the system image instead -- see
+#      firmware/Android.mk (measured on device, after early-init and
+#      post-fs both silently did nothing).
+#
+#  /dev/block/mmcblk0rpmb symlink
+#      librpmb.so opens that exact path. Mainline's RPMB chardev is
+#      /dev/mmcblk0rpmb. The ioctl it sends needs kiwi_rpmb_compat_patch.py.
+#
+#  qseecomd (root)
+#      Loads five listener libraries and registers them with TrustZone, which is
+#      what the fingerprint TZ app needs for template storage. Must be root: it
+#      opens /dev/mmcblk0rpmb, which is root-only, and its main() returns -1 if
+#      RPMB init fails, so a permission error there costs every listener.
+#
+#  teecd (system)
+#      The GlobalPlatform relay. lib_fpc_tac_shared.so sends its commands via
+#      libteec.so, which only talks to a socket; teecd is the other end and does
+#      the actual QSEECom calls. Same user/group as 19.1's init.target.rc.
+#
+# Both daemons need the kernel side: kiwi_qseecom.ko (/dev/ion + /dev/qseecom)
+# and the qcom_scm export patch.
+
+on post-fs
+    # librpmb.so opens the downstream path; mainline exposes the upstream one.
+    symlink /dev/mmcblk0rpmb /dev/block/mmcblk0rpmb
+    # libssd.so looks for the ssd partition under the downstream directory
+    # layout; mainline names the controller differently, so bridge the two.
+    # Without this qseecomd exits and NONE of the five listeners start.
+    mkdir /dev/block/bootdevice 0755 root root
+    symlink /dev/block/by-name /dev/block/bootdevice/by-name
+    # /firmware is NOT here: / is read-only, so it is built into the system
+    # image instead (see firmware/Android.mk).
+
+service qseecomd /vendor/bin/qseecomd
+    class core
+    user root
+    group root
+    # Starts after /data so the file-system listeners can reach template storage.
+    disabled
+
+service teecd /vendor/bin/teecd
+    class core
+    user system
+    group system
+    # It forks and the parent exits with status 0 ("start to daemon
+    # server" + fork in its strings). Without oneshot, init restarts it
+    # forever; the background process is the real teecd.
+    oneshot
+    disabled
+
+on post-fs-data
+    # Both daemons open /dev/qseecom at startup and do not retry: started
+    # before the driver is loaded, qseecomd stays up doing nothing.
+    exec - root root -- /vendor/bin/modprobe -a -d /vendor/lib/modules kiwi_qseecom
+    start qseecomd
+    start teecd

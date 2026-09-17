@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+# Bypass charging: let the KiwiParts system app drive the charger's
+# charge-enable register, and let init relabel/chown it at boot.
+
+allow system_app sysfs_bq_charger:dir search;
+allow system_app sysfs_bq_charger:file rw_file_perms;
+
+allow init sysfs_bq_charger:dir search;
+allow init sysfs_bq_charger:file { getattr open read setattr write };

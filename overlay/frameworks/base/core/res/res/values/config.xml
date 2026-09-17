@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The APDS9930 ALS is present and reporting (android.sensor.light), but
+         AOSP defaults this to false, so Settings hides the auto-brightness
+         toggle entirely. -->
+    <bool name="config_automatic_brightness_available">true</bool>
+
+    <!-- Lux thresholds. config_autoBrightnessLcdBacklightValues below must have
+         exactly one more entry than this array: the first backlight value
+         applies below the first threshold. -->
+    <integer-array name="config_autoBrightnessLevels">
+        <item>10</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+        <item>240</item>
+        <item>480</item>
+        <item>960</item>
+        <item>2000</item>
+    </integer-array>
+
+    <!-- Backlight per lux band, 0-255 to match max_brightness on this panel. -->
+    <integer-array name="config_autoBrightnessLcdBacklightValues">
+        <item>20</item>
+        <item>35</item>
+        <item>55</item>
+        <item>80</item>
+        <item>110</item>
+        <item>150</item>
+        <item>190</item>
+        <item>220</item>
+        <item>255</item>
+    </integer-array>
+
+    <!-- Slider bounds. min 10 rather than 0 so the panel is never fully dark. -->
+    <integer name="config_screenBrightnessSettingMinimum">10</integer>
+    <integer name="config_screenBrightnessSettingMaximum">255</integer>
+    <integer name="config_screenBrightnessSettingDefault">102</integer>
+    <integer name="config_screenBrightnessDim">10</integer>
+</resources>

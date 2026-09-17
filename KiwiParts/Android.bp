@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: Apache-2.0
+// Bypass charging for Huawei kiwi (Honor 5X / GR5 2016).
+
+android_app {
+    name: "KiwiParts",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    certificate: "platform",
+    platform_apis: true,
+    system_ext_specific: true,
+    privileged: true,
+    optimize: {
+        proguard_flags_files: ["proguard.flags"],
+    },
+    static_libs: [
+        "androidx.preference_preference",
+        "SettingsLibCollapsingToolbarBaseActivity",
+        "SettingsLibSettingsTheme",
+    ],
+}

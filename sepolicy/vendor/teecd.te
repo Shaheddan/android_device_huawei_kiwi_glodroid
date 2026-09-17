@@ -1,0 +1,5 @@
+# kiwi: fingerprint (route A).
+#
+# teecd resolves the same hard-coded /firmware/image path as qseecomd.
+# See qseecomd.te for why this allows init rather than a teecd domain.
+allow init rootfs:dir search;

@@ -1,0 +1,1 @@
+type sysfs_bq_charger, fs_type, sysfs_type;

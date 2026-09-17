@@ -1,0 +1,5 @@
+# Label everything under the i2c controller the charger sits on. Matching on
+# the controller's register address (78b8000) rather than the enumerated bus
+# number keeps this stable: the kernel numbered it i2c-2 on this boot, but
+# that ordering is not guaranteed.
+genfscon sysfs /devices/platform/soc@0/78b8000.i2c u:object_r:sysfs_bq_charger:s0

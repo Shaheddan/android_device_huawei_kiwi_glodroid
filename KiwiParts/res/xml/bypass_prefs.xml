@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  NOTE: androidx.preference.SwitchPreference, NOT SwitchPreferenceCompat.
+  PreferenceTheme.SettingsLib defines switchPreferenceStyle but not
+  switchPreferenceCompatStyle, so the Compat variant renders with no switch
+  widget at all - no error, just a missing toggle.
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.preference.SwitchPreference
+        android:key="bypass_now"
+        android:title="@string/bypass_now_title"
+        android:summary="@string/bypass_now_summary"
+        android:defaultValue="false"/>
+
+    <androidx.preference.SwitchPreference
+        android:key="auto_bypass"
+        android:title="@string/auto_bypass_title"
+        android:summary="@string/auto_bypass_summary"
+        android:defaultValue="false"/>
+
+    <SeekBarPreference
+        android:key="auto_bypass_level"
+        android:title="@string/threshold_title"
+        android:defaultValue="80"
+        android:max="100"
+        app:min="10"
+        app:showSeekBarValue="true"
+        app:updatesContinuously="false"/>
+
+    <Preference
+        android:key="footer"
+        android:summary="@string/footer_text"
+        android:selectable="false"
+        android:enabled="false"/>
+</PreferenceScreen>

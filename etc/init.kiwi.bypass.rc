@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The BQ24296M charge-enable register is root-owned by default, so the
+# system app that owns the Bypass charging screen cannot write it. Hand it
+# to system, the same way LineageOS 19.1 did for the downstream
+# factory_diag node.
+#
+# f_chg_config is REG01 CHG_CONFIG: 1 = charge, 0 = run from the charger
+# with the battery held. f_en_hiz is deliberately NOT opened up - on this
+# hardware it cuts the input and drains the battery while plugged in.
+
+on property:sys.boot_completed=1
+    chown system system /sys/class/power_supply/bq24190-charger/f_chg_config
+    chmod 0660 /sys/class/power_supply/bq24190-charger/f_chg_config

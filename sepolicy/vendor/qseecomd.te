@@ -1,0 +1,10 @@
+# kiwi: fingerprint (route A).
+#
+# qseecomd loads cmnlib and the TrustZone apps from a hard-coded
+# /firmware/image path, which is a symlink to /vendor/odm/modem.
+# Following a rootfs symlink needs read + search on rootfs.
+#
+# NOT a domain definition: qseecomd still runs in init's domain (init
+# logs 'no domain transition'). That is a separate piece of work; while
+# the device is permissive it changes nothing either way.
+allow init rootfs:lnk_file { read getattr };

@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// kiwi route A (fingerprint): the shim library the 19.1 blobs need on
+// Android 13. See libshim_kiwi_fp.c.
+//
+// There is no libstdc++ stub here: bionic still has a real libstdc++ module
+// (bionic/libc/Android.bp, vendor_available), it simply was not being built
+// for vendor. device.mk lists it in PRODUCT_PACKAGES instead.
+
+cc_library_shared {
+    name: "libshim_kiwi_fp",
+    // The four Huawei-only liblog symbols, with the signatures LineageOS 19.1
+    // shipped for this device. fingerprint.msm8916.so imports two of them.
+    srcs: ["libshim_kiwi_fp.c"],
+    soc_specific: true,
+    compile_multilib: "64",
+    cflags: ["-Wall", "-Werror"],
+}

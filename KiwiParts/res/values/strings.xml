@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kiwi settings</string>
+    <string name="bypass_title">Bypass charging</string>
+    <string name="bypass_summary">Run from the charger without charging the battery</string>
+
+    <string name="bypass_now_title">Bypass now</string>
+    <string name="bypass_now_summary">Hold the battery at its current level and run from the charger</string>
+
+    <string name="auto_bypass_title">Auto bypass</string>
+    <string name="auto_bypass_summary">Charge to a limit, then hold there</string>
+
+    <string name="threshold_title">Charge limit</string>
+    <string name="threshold_summary">Stop charging at %1$d%%</string>
+
+    <string name="footer_text">Bypass keeps the charger powering the phone while the battery is left alone, which avoids the heat and wear of sitting at 100%% on a charger. Charging resumes normally whenever bypass is switched off.</string>
+
+    <string name="err_unavailable">Charger control is not available on this build</string>
+    <string name="err_write">Could not change the charger setting</string>
+</resources>

@@ -1,0 +1,8 @@
+# GloDroid's init.glodroid.usb.rc sets sys.usb.controller only inside its
+# `on charger` block, hardcoded to 11110000.dwc3 (a DesignWare controller from
+# another SoC). kiwi's ChipIdea UDC enumerates as ci_hdrc.0 -- confirmed on the
+# device via /sys/class/udc -- so on a normal boot the property is empty, the
+# gadget HAL has no UDC to bind, nothing enumerates over USB, and Settings
+# crashes when it queries the HAL for available configurations.
+on early-init
+    setprop sys.usb.controller ci_hdrc.0
