@@ -12,7 +12,7 @@ measured on the device, not what was hoped for.
 
 | Repo | Contents |
 |---|---|
-| `android_kernel_huawei_kiwi_mainline` | the 6.10 kernel, with this port's patches as commits on top of upstream |
+| [android_kernel_huawei_kiwi_mainlinenew](https://github.com/Shaheddan/android_kernel_huawei_kiwi_mainlinenew/tree/kiwi-glodroid-6.10) | the 6.10 kernel, with this port's patches as commits on top of upstream |
 | `android_vendor_huawei_kiwi_glodroid` | the proprietary blobs this tree references |
 
 Built against [GloDroidCommunity/qcom-msm8916-series](https://github.com/GloDroidCommunity/qcom-msm8916-series).
